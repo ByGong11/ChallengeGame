@@ -67,7 +67,10 @@ bool FRespawnState::SetCheckpoint(const FTransform& InTransform)
 		return false;
 	}
 
+	// 检查点只描述重生的位置和朝向；角色必须以自身的默认单位缩放生成。
+	// 否则关卡物体的非单位缩放会被继承到 Pawn，造成角色变形、相机距离异常。
 	CheckpointTransform = InTransform;
+	CheckpointTransform.SetScale3D(FVector::OneVector);
 	bHasCheckpoint = true;
 	return true;
 }

@@ -44,6 +44,7 @@ bool FRespawnStateAutomationTest::RunTest(const FString& Parameters)
 	const FTransform DefaultTransform(FRotator(0.0, 45.0, 0.0), FVector(100.0, 200.0, 300.0), FVector(1.0, 1.0, 1.0));
 	const FTransform FirstCheckpoint(FRotator(0.0, 90.0, 0.0), FVector(1000.0, 2000.0, 3000.0), FVector(1.0, 1.0, 1.0));
 	const FTransform LatestCheckpoint(FRotator(10.0, 180.0, 20.0), FVector(-300.0, 400.0, 500.0), FVector(1.5, 2.0, 0.5));
+	const FTransform ExpectedLatestCheckpoint(LatestCheckpoint.GetRotation(), LatestCheckpoint.GetLocation(), FVector::OneVector);
 	FRespawnState State(DefaultTransform);
 
 	switch (CaseNumber)
@@ -60,7 +61,7 @@ bool FRespawnStateAutomationTest::RunTest(const FString& Parameters)
 	case 4: return TestFalse(TEXT("Has checkpoint"), State.HasCheckpoint());
 	case 5: return TestTrue(TEXT("Set checkpoint"), State.SetCheckpoint(FirstCheckpoint));
 	case 6: State.SetCheckpoint(FirstCheckpoint); return TestTrue(TEXT("Checkpoint selected"), State.GetRespawnTransform().Equals(FirstCheckpoint));
-	case 7: State.SetCheckpoint(FirstCheckpoint); State.SetCheckpoint(LatestCheckpoint); return TestTrue(TEXT("Latest selected"), State.GetRespawnTransform().Equals(LatestCheckpoint));
+	case 7: State.SetCheckpoint(FirstCheckpoint); State.SetCheckpoint(LatestCheckpoint); return TestTrue(TEXT("Latest selected with unit scale"), State.GetRespawnTransform().Equals(ExpectedLatestCheckpoint));
 	case 8: State.SetCheckpoint(LatestCheckpoint); return TestTrue(TEXT("Rotation"), State.GetRespawnTransform().GetRotation().Equals(LatestCheckpoint.GetRotation()));
 	case 9: State.SetCheckpoint(LatestCheckpoint); return TestTrue(TEXT("Unit scale"), State.GetRespawnTransform().GetScale3D().Equals(FVector::OneVector));
 	case 10:
@@ -93,7 +94,7 @@ bool FRespawnStateAutomationTest::RunTest(const FString& Parameters)
 	case 25: return TestFalse(TEXT("Cancel from alive"), State.CancelRespawn());
 	case 26: State.TryBeginDeath(); State.CancelRespawn(); return TestTrue(TEXT("Death after cancel"), State.TryBeginDeath());
 	case 27: State.TryBeginDeath(); State.BeginRespawn(); State.CompleteRespawn(); return TestTrue(TEXT("Death after completion"), State.TryBeginDeath());
-	case 28: State.TryBeginDeath(); State.SetCheckpoint(LatestCheckpoint); return TestTrue(TEXT("Updated checkpoint"), State.GetRespawnTransform().Equals(LatestCheckpoint));
+	case 28: State.TryBeginDeath(); State.SetCheckpoint(LatestCheckpoint); return TestTrue(TEXT("Updated checkpoint with unit scale"), State.GetRespawnTransform().Equals(ExpectedLatestCheckpoint));
 	case 29: return TestTrue(TEXT("Replace default"), State.SetDefaultSpawnTransform(LatestCheckpoint)) && TestTrue(TEXT("New default selected"), State.GetRespawnTransform().Equals(LatestCheckpoint));
 	case 30: return TestTrue(TEXT("Negative finite transform"), FRespawnState::IsUsableTransform(LatestCheckpoint));
 	default:
